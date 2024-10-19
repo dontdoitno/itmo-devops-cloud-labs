@@ -1,0 +1,24 @@
+FROM node:16-alpine AS build
+
+WORKDIR /app
+
+# Сначала работаем с package.json и package-lock.json для установки зависимостей и чистки кеша
+COPY package*.json ./
+RUN npm install --production && npm cache clean --force
+
+# Копируем проект и собираем проект
+COPY . .
+RUN npm run build
+
+# Образ для работы сборки
+FROM node:16-alpine
+
+WORKDIR /app
+COPY --from=build /app .
+
+# Пользователь не root
+RUN adduser -D user_dock
+USER user_dock
+
+EXPOSE 3000
+CMD ["npm", "start"]

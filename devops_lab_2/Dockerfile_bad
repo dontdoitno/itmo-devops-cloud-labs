@@ -1,0 +1,10 @@
+FROM ubuntu:latest
+
+RUN apt-get update && apt-get install -y nodejs npm
+RUN mkdir /app
+RUN cd /app
+
+COPY . /app
+RUN npm install
+
+CMD ["npm", "start"]
