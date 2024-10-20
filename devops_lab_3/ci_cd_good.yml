@@ -1,0 +1,43 @@
+name: good CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Актуальной версия (на работе node не скажется изменение)
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3  # Новая версия обеспечит большую безопасность
+
+      - name: node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'  # Указана версия Node.js
+
+      - name: cache
+        uses: actions/cache@v3  # Кешируем зависимости они не так часто обновляются
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules 
+
+      - name: dependencies
+        run: npm install --legacy-peer-deps  # В таком случае не возникнет ошибка в зависимостях
+
+      - name: lintering  # Линтерим
+        run: npm run lint
+
+      - name: build
+        run: npm run build
+
+      - name: tests
+        run: npm test  # Если есть ошибки то тесты их покажут(иначе зачем они)
+
+      - name: deploy
+        if: success()  # Если все успешно, то деплоим
+        run: npm run deploy

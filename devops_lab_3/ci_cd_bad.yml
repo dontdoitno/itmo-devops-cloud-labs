@@ -1,0 +1,32 @@
+name: bad CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-12.04  # Старая версия
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v1  # Старая версия
+
+      - name: node.js
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nodejs npm  # Установка Node.js вручную
+
+      - name: installing
+        run: npm install  # Нет проверки на конфликты (--legacy-peer-deps)
+
+      - name: build
+        run: npm run build
+
+      - name: tests
+        run: npm test
+        continue-on-error: true  # Ошибки пропускаются
+
+      - name: deploy
+        run: npm run deploy
