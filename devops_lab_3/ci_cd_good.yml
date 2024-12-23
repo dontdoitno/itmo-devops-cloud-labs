@@ -39,5 +39,5 @@ jobs:
         run: npm test  # Если есть ошибки то тесты их покажут(иначе зачем они)
 
       - name: deploy
-        if: success()  # Если все успешно, то деплоим
-        run: npm run deploy
+        if: success()
+        run: echo project deployed
