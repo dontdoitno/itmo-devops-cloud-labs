@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "8080:5000" # Используем нестандартный порт для внешнего доступа
+    environment:
+      - LOG_LEVEL=info # Уровень логирования снижен для production
+      - DB_HOST=database
+      - DB_USER=postgres
+      - DB_NAME=testdb
+    secrets:
+      - secret_key # Используем Docker Secrets для хранения конфиденциальных данных
+    restart: always # Перезапуск при сбое для повышения доступности
+    depends_on:
+      - database # Указывает, что база данных должна быть запущена перед приложением
+
+  database:
+    image: postgres:15-alpine # Используем lightweight-образ и конкретную версию
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password # Пароль через Docker Secrets
+    secrets:
+      - db_password
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M # Ограничение памяти для предотвращения чрезмерного использования ресурсов
+
+  log_aggregator:
+    image: fluent/fluentd:v1.14-1 # Используем стабильную и поддерживаемую версию Fluentd для лог-агрегации
+    ports:
+      - "24224:24224" # Порт для приема логов Fluentd
+    environment:
+      - FLUENTD_CONF=fluent.conf # Конфигурация Fluentd
+    restart: always # Перезапуск лог-агрегатора при сбоях для повышения доступности
+
+secrets:
+  secret_key:
+    file: ./secrets/secret_key.txt # Путь к файлу с секретом
+  db_password:
+    file: ./secrets/db_password.txt # Путь к файлу с паролем для базы данных

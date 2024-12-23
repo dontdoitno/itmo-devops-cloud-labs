@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "3000:5000"
+    environment:
+      - SECRET_KEY=my_secret_key # Секреты прописаны в конфиге (плохо)
+      - DB_PASSWORD=password123
+      - DB_HOST=database
+      - DB_NAME=real_project_db
+      - DB_USER=postgres
+    volumes:
+      - ./app:/app # Монтирование кода для разработки (плохо для production)
+    restart: "no" # Нет политики перезапуска (плохо)
+    depends_on:
+      - database
+
+  database:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=password123 # Пароль указан в переменной окружения (плохо)
+      - POSTGRES_DB=real_project_db
+      - POSTGRES_USER=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: "no" # Нет политики перезапуска
+
+volumes:
+  postgres_data:
